@@ -1,4 +1,4 @@
-# syntax = ghcr.io/akihirosuda/buildkit-nix:latest
+# syntax = ghcr.io/akihirosuda/buildkit-nix:v0.0.1@sha256:97205438b67bc0b3a4ae5e9c38f610723bd81102bcbf215ca833cf68e99978e0
 
 # Hints:
 # - https://nix.dev/tutorials/building-and-running-docker-images
