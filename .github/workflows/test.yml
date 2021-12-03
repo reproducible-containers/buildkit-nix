@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+  pull_request:
+
+jobs:
+  golangci-lint:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        version: v1.35
+        args: --verbose
+
+  test-integration:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - name: "Install test dependencies"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y moreutils
+    - name: "Run the integration test"
+      run: ./hack/test.sh
