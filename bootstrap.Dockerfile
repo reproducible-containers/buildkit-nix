@@ -1,6 +1,5 @@
 ARG GOLANG_IMAGE=golang:1.17.5-alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74
-# Mirrored from "docker.io/nixos/nix:2.3.12@sha256:d9bb3b85b846eb0b6c5204e0d76639dff72c7871fb68f5d4edcfbb727f8a5653" (amd64-only) to avoid Docker Hub rate limit
-ARG NIX_IMAGE=ghcr.io/stargz-containers/nixos/nix:2.3.12-org@sha256:d9bb3b85b846eb0b6c5204e0d76639dff72c7871fb68f5d4edcfbb727f8a5653
+ARG NIX_IMAGE=nixos/nix:2.5.1@sha256:d66c307749b460c054d8edf6191f58ec38c569c8639161d41eb6e4879baf7ff2
 
 FROM ${GOLANG_IMAGE} AS build
 WORKDIR /src
