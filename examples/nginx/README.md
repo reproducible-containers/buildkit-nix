@@ -8,12 +8,20 @@ docker build -t nginx-nix -f default.nix .
 ```
 
 ```
-docker run -d -p 8080:80 --name nginx-nix nginx-nix
+docker run -d -p 8080:80 --read-only --name nginx-nix nginx-nix
 ```
 
-## Updating dependencies
+## Advanced guides
+### Updating dependencies
 
 ```bash
 nix-env -i niv
 niv update
+```
+
+### Build with `nix-build`
+
+```bash
+nix-build
+docker load < result
 ```

@@ -33,5 +33,11 @@ for f in "${td}"/examples/*; do
 			cat "${df}"
 		) | sponge "${df}"
 		"$DOCKER" build -t "${name}" -f "${df}" .
+		"$DOCKER" run -d -p 127.0.0.1:8080:80 --read-only --name "${name}" "${name}"
+		# NOTE: curl --retry-all-errors is not available on Ubuntu 20.04
+		sleep 3
+		curl -f --retry 5 http://127.0.0.1:8080
+		"$DOCKER" logs "${name}"
+		"$DOCKER" rm -f "${name}"
 	)
 done

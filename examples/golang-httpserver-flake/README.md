@@ -1,14 +1,14 @@
-# Example: nginx (Flake)
+# Example: A simple http server in Go (Flake)
 
 ## Usage
 
 ```bash
 export DOCKER_BUILDKIT=1
-docker build -t nginx-nix -f flake.nix .
+docker build -t golang-httpserver -f default.nix .
 ```
 
 ```
-docker run -d -p 8080:80 --read-only --name nginx-nix nginx-nix
+docker run -d -p 8080:80 --read-only --name golang-httpserver golang-httpserver
 ```
 
 ## Advanced guides

@@ -4,8 +4,22 @@
   outputs = { self, nixpkgs }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    in
-    with pkgs; {
+      entrypoint = pkgs.writeScript "docker-entrypoint.sh" ''
+        #!${pkgs.stdenv.shell}
+        set -eux -o pipefail
+        # Create "nogroup" group
+        if ! grep -q ^nogroup /etc/group; then
+          # dereference symlink (/etc/group -> /nix/....) to support `docker run --read-only`
+          cp -aL /etc/group /etc/group.real
+          echo nogroup:x:65534: >>/etc/group.real
+          rm -f /etc/group
+          mv /etc/group.real /etc/group
+        fi
+        # Initialize /var
+        mkdir -p /var/log/nginx /var/cache/nginx/client_body
+        exec nginx -g "daemon off; error_log /dev/stderr debug;"
+      '';
+    in with pkgs; {
       defaultPackage.x86_64-linux = dockerTools.buildImage {
         name = "nginx";
         tag = "nix";
@@ -14,20 +28,21 @@
           dockerTools.fakeNss
           bash
           coreutils
+          gnugrep
           nginx
           (writeTextDir "${pkgs.nginx}/html/index.html" ''
             <html><body>hello nix</body></html>
           '')
         ];
-        # Use extraCommands, not runAsRoot, to avoid dependency on KVM
-        extraCommands = "
-          grep -q ^nogroup etc/group || echo nogroup:x:65534: >>etc/group
-          mkdir -p var/log/nginx var/cache/nginx/client_body
-        ";
+        # runAsRoot cannot be used because it depends on KVM.
+        # extraCommands can be used but often fails unless running everything as the root.
+        # https://discourse.nixos.org/t/dockertools-buildimage-and-user-writable-tmp/5397
         config = {
-          Cmd = [ "nginx" "-g" "daemon off; error_log /dev/stderr debug;" ];
-          ExposedPorts = {
-            "80/tcp" = { };
+          Cmd = [ entrypoint ];
+          ExposedPorts = { "80/tcp" = { }; };
+          Volumes = {
+            "/etc" = { };
+            "/var" = { };
           };
         };
       };
