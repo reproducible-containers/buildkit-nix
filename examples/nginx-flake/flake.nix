@@ -1,4 +1,4 @@
-# syntax = ghcr.io/akihirosuda/buildkit-nix:latest
+# syntax = ghcr.io/akihirosuda/buildkit-nix:v0.0.2@sha256:ad13161464806242fd69dbf520bd70a15211b557d37f61178a4bf8e1fd39f1f2
 
 {
   outputs = { self, nixpkgs }:
