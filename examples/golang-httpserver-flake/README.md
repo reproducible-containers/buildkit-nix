@@ -4,7 +4,7 @@
 
 ```bash
 export DOCKER_BUILDKIT=1
-docker build -t golang-httpserver -f default.nix .
+docker build -t golang-httpserver -f flake.nix .
 ```
 
 ```
