@@ -4,8 +4,12 @@ BuildKit-Nix allows using Nix derivations (`default.nix`, `flake.nix`) as Docker
 
 ## Examples
 
-- [`./examples/nginx/default.nix`](./examples/nginx/default.nix): Nginx (Legacy)
-- [`./examples/nginx-flake/flake.nix`](./examples/nginx-flake/flake.nix): Nginx (Flake)
+Legacy (with Niv):
+- [`./examples/nginx/default.nix`](./examples/nginx/default.nix): Nginx
+
+Flakes:
+- [`./examples/nginx-flake/flake.nix`](./examples/nginx-flake/flake.nix): Nginx
+- [`./examples/golang-httpserver-flake/flake.nix`](./examples/golang-httpserver-flake/flake.nix): A simple http server in Go
 
 ## Usage
 ### With Docker
