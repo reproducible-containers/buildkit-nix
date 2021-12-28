@@ -34,3 +34,5 @@ jobs:
         sudo apt-get install -y moreutils
     - name: "Run the integration test"
       run: ./hack/test.sh
+    - name: "Show the local images"
+      run: docker images --no-trunc

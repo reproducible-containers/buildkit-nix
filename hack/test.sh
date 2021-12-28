@@ -18,12 +18,20 @@ image="127.0.0.1:5000/buildkit-nix:test-${version}-${timestamp}"
 "$DOCKER" build -t "$image" -f bootstrap.Dockerfile .
 "$DOCKER" push "$image"
 
-(
-	cd "${td}/examples/nginx"
-	sed -i '1 s/^ *# *syntax *=.*$//' default.nix
+for f in "${td}"/examples/*; do
+	name="$(basename "${f}")"
+	echo "===== ${name} ====="
 	(
-		echo "# syntax = ${image}"
-		cat default.nix
-	) | sponge default.nix
-	"$DOCKER" build -t nginx-nix -f default.nix .
-)
+		cd "$f"
+		df="default.nix"
+		if [[ -e "flake.nix" ]]; then
+			df="flake.nix"
+		fi
+		sed -i '1 s/^ *# *syntax *=.*$//' "${df}"
+		(
+			echo "# syntax = ${image}"
+			cat "${df}"
+		) | sponge "${df}"
+		"$DOCKER" build -t "${name}" -f "${df}" .
+	)
+done
