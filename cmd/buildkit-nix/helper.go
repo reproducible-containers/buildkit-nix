@@ -59,12 +59,25 @@ func helperAction(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	// nix-build creates a docker V1 tgz to /context/result .
-	nixBuildCmd := exec.CommandContext(ctx, "nix-build", "--option", "build-users-group", "", fullFilename)
+	flakeMode := filepath.Base(filename) == "flake.nix"
+	// nix creates a docker V1 tgz to /context/result .
+	var nixBuildCmd *exec.Cmd
+	if flakeMode {
+		nixBuildCmd = exec.CommandContext(ctx,
+			"nix",
+			"--extra-experimental-features", "nix-command",
+			"--extra-experimental-features", "flakes",
+			"build",
+			"--option", "build-users-group", "",
+			"/dockerfile",
+		)
+	} else {
+		nixBuildCmd = exec.CommandContext(ctx, "nix-build", "--option", "build-users-group", "", fullFilename)
+	}
 	nixBuildCmd.Dir = "/context"
 	nixBuildCmd.Stderr = cmd.OutOrStderr()
 	nixBuildCmd.Stdout = nixBuildCmd.Stderr
-	logrus.Infof("Running %v", nixBuildCmd.Args)
+	logrus.Infof("Running %v (flake mode: %v)", nixBuildCmd.Args, flakeMode)
 	if err := nixBuildCmd.Run(); err != nil {
 		return err
 	}

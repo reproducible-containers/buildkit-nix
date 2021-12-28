@@ -1,10 +1,11 @@
 # BuildKit-Nix: Nix as Dockerfiles (`docker build -f default.nix .`)
 
-BuildKit-Nix allows using Nix derivations (`default.nix`) as Dockerfiles.
+BuildKit-Nix allows using Nix derivations (`default.nix`, `flake.nix`) as Dockerfiles.
 
 ## Examples
 
-- [`./examples/nginx/default.nix`](./examples/nginx/default.nix)
+- [`./examples/nginx/default.nix`](./examples/nginx/default.nix): Nginx (Legacy)
+- [`./examples/nginx-flake/flake.nix`](./examples/nginx-flake/flake.nix): Nginx (Flake)
 
 ## Usage
 ### With Docker

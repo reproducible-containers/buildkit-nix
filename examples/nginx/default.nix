@@ -20,6 +20,7 @@ pkgs.dockerTools.buildImage{
     <html><body>hello nix</body></html>
     '')
   ];
+  # Use extraCommands, not runAsRoot, to avoid dependency on KVM
   extraCommands = "
     grep -q ^nogroup etc/group || echo nogroup:x:65534: >>etc/group
     mkdir -p var/log/nginx var/cache/nginx/client_body
