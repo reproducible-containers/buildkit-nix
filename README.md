@@ -10,6 +10,7 @@ Legacy (with Niv):
 Flakes:
 - [`./examples/nginx-flake/flake.nix`](./examples/nginx-flake/flake.nix): Nginx
 - [`./examples/golang-httpserver-flake/flake.nix`](./examples/golang-httpserver-flake/flake.nix): A simple http server in Go
+- [`./examples/rust-httpserver-flake/flake.nix`](./examples/rust-httpserver-flake/flake.nix): A simple http server in Rust
 
 ## Usage
 ### With Docker
