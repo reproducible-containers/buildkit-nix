@@ -12,6 +12,7 @@ import (
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
+	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
 	"github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/frontend/gateway/grpcclient"
 	"github.com/moby/buildkit/util/appcontext"
@@ -31,9 +32,10 @@ func newFrontendCmd() *cobra.Command {
 
 // mimic dockerfile.v1 frontend
 const (
-	localNameContext    = "context"
-	localNameDockerfile = "dockerfile"
-	keyFilename         = "filename"
+	localNameContext     = "context"
+	localNameDockerfile  = "dockerfile"
+	keyFilename          = "filename"
+	dockerignoreFilename = ".dockerignore"
 )
 
 func frontendAction(cmd *cobra.Command, args []string) error {
@@ -55,6 +57,7 @@ func frontendBuild(nixImage string) client.BuildFunc {
 		localDfSt := llb.Local(localNameDockerfile,
 			llb.SessionID(c.BuildOpts().SessionID),
 			dockerfile2llb.WithInternalName("local dockerfile"),
+			llb.FollowPaths([]string{dfName}),
 		)
 
 		// Inject the self binary into the ExecOp.
@@ -67,14 +70,13 @@ func frontendBuild(nixImage string) client.BuildFunc {
 		if err != nil {
 			return nil, err
 		}
-
-		localCtxSt := llb.Local(localNameContext,
-			llb.SessionID(c.BuildOpts().SessionID),
-			dockerfile2llb.WithInternalName("local context"),
-		)
+		localCtxSt, err := getContextSt(ctx, c)
+		if err != nil {
+			return nil, err
+		}
 
 		runSt := nixImageSt.Run(
-			llb.AddMount("/context", localCtxSt),
+			llb.AddMount("/context", *localCtxSt),
 			llb.AddMount("/dockerfile", localDfSt),
 			llb.AddMount("/self", *selfImageSt),
 			llb.AddMount("/out", llb.Scratch()),
@@ -208,4 +210,47 @@ func validateSelfImageSt(ctx context.Context, c client.Client, selfImageSt llb.S
 			selfPath, selfImageRefStr, selfDigest, selfDigest2)
 	}
 	return selfPath, nil
+}
+
+func getContextSt(ctx context.Context, c client.Client) (*llb.State, error) {
+	st := llb.Local(localNameContext,
+		llb.SessionID(c.BuildOpts().SessionID),
+		llb.FollowPaths([]string{dockerignoreFilename}),
+		dockerfile2llb.WithInternalName("load "+dockerignoreFilename),
+		llb.Differ(llb.DiffNone, false),
+	)
+	def, err := st.Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.Solve(ctx, client.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	ref, err := res.SingleRef()
+	if err != nil {
+		return nil, err
+	}
+	dt, _ := ref.ReadFile(ctx, client.ReadRequest{
+		Filename: dockerignoreFilename,
+	}) // error ignored
+
+	var excludes []string
+	if len(dt) != 0 {
+		excludes, err = dockerignore.ReadAll(bytes.NewBuffer(dt))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	st = llb.Local(localNameContext,
+		dockerfile2llb.WithInternalName("load build context"),
+		llb.SessionID(c.BuildOpts().SessionID),
+		llb.ExcludePatterns(excludes),
+	)
+
+	return &st, nil
 }
