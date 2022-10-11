@@ -1,4 +1,4 @@
-module github.com/AkihiroSuda/buildkit-nix/examples/golang-httpserver
+module github.com/reproducible-containers/buildkit-nix/examples/golang-httpserver
 
 go 1.16
 
