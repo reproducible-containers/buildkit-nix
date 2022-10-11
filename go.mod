@@ -1,4 +1,4 @@
-module github.com/AkihiroSuda/buildkit-nix
+module github.com/reproducible-containers/buildkit-nix
 
 go 1.19
 

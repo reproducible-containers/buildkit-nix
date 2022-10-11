@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/AkihiroSuda/buildkit-nix/pkg/refutil"
 	"github.com/docker/distribution/reference"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
@@ -16,6 +15,7 @@ import (
 	"github.com/moby/buildkit/frontend/gateway/grpcclient"
 	"github.com/moby/buildkit/util/appcontext"
 	"github.com/opencontainers/go-digest"
+	"github.com/reproducible-containers/buildkit-nix/pkg/refutil"
 	"github.com/spf13/cobra"
 )
 
