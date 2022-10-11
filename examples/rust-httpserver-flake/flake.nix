@@ -1,4 +1,4 @@
-# syntax = ghcr.io/akihirosuda/buildkit-nix:v0.0.3@sha256:ecc6f051398441038af21186c2e23feed443efc3941c7567e3c113107712f103
+# syntax = ghcr.io/reproducible-containers/buildkit-nix:v0.1.0@sha256:c727e0efc2a3aa23bbd31404701b5eee420ada1f08c7d4e21d666f24804355b6
 
 {
   inputs.flake-utils.url = "github:numtide/flake-utils";
