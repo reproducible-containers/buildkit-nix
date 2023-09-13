@@ -10,14 +10,17 @@
         app = pkgs.buildGoModule {
           name = "golang-httpserver";
           src = ./.;
-          vendorSha256 = "FdDIvZrvGFHk7aqjLtJsiqsIHM6lob9iNPLd7ITau7o=";
+          vendorSha256 = "sha256-0HDZ3llIgLMxRLNei93XrcYliBzjajU6ZPllo3/IZVY=";
           runVend = true;
         };
       in rec {
         defaultPackage = pkgs.dockerTools.buildImage {
           name = "golang-httpserver";
           tag = "nix";
-          contents = [ pkgs.bash pkgs.coreutils app ];
+          copyToRoot = pkgs.buildEnv {
+            name = "image-root";
+            paths= [ pkgs.bash pkgs.coreutils app ];
+          };
           config = {
             Cmd = [ "golang-httpserver" ];
             ExposedPorts = { "80/tcp" = { }; };

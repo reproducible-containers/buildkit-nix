@@ -46,6 +46,7 @@ in pkgs.dockerTools.buildImage {
     Volumes = {
       "/etc" = { };
       "/var" = { };
+      "/tmp" = { };
     };
   };
 }
