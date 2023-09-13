@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -10,7 +9,8 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
-	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
+	"github.com/moby/buildkit/frontend/dockerfile/parser"
+	"github.com/moby/buildkit/frontend/dockerui"
 	"github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/frontend/gateway/grpcclient"
 	"github.com/moby/buildkit/util/appcontext"
@@ -46,7 +46,7 @@ func frontendAction(cmd *cobra.Command, args []string) error {
 
 func frontendBuild(nixImage string) client.BuildFunc {
 	return func(ctx context.Context, c client.Client) (*client.Result, error) {
-		nixImageSt := llb.Image(nixImage, llb.WithMetaResolver(c), dockerfile2llb.WithInternalName("nix image"))
+		nixImageSt := llb.Image(nixImage, llb.WithMetaResolver(c), dockerui.WithInternalName("nix image"))
 
 		dfName := c.BuildOpts().Opts[keyFilename]
 		if dfName == "" {
@@ -54,7 +54,7 @@ func frontendBuild(nixImage string) client.BuildFunc {
 		}
 		localDfSt := llb.Local(localNameDockerfile,
 			llb.SessionID(c.BuildOpts().SessionID),
-			dockerfile2llb.WithInternalName("local dockerfile"),
+			dockerui.WithInternalName("local dockerfile"),
 		)
 
 		// Inject the self binary into the ExecOp.
@@ -70,7 +70,7 @@ func frontendBuild(nixImage string) client.BuildFunc {
 
 		localCtxSt := llb.Local(localNameContext,
 			llb.SessionID(c.BuildOpts().SessionID),
-			dockerfile2llb.WithInternalName("local context"),
+			dockerui.WithInternalName("local context"),
 		)
 
 		runSt := nixImageSt.Run(
@@ -124,11 +124,11 @@ func getSelfImageSt(ctx context.Context, c client.Client, localDfSt llb.State, d
 	if err != nil {
 		return nil, "", err
 	}
-	selfImageRefStr, _, _, ok := dockerfile2llb.DetectSyntax(bytes.NewReader(dfBytes))
+	selfImageRefStr, _, _, ok := parser.DetectSyntax(dfBytes)
 	if !ok {
 		return nil, "", fmt.Errorf("failed to detect self image reference from %q", dfName)
 	}
-	if selfImageDgst, _, err := c.ResolveImageConfig(ctx, selfImageRefStr, llb.ResolveImageConfigOpt{}); err != nil {
+	if _, selfImageDgst, _, err := c.ResolveImageConfig(ctx, selfImageRefStr, llb.ResolveImageConfigOpt{}); err != nil {
 		return nil, "", err
 	} else if selfImageDgst != "" {
 		selfImageRef, err := reference.ParseNormalizedNamed(selfImageRefStr)
@@ -141,7 +141,7 @@ func getSelfImageSt(ctx context.Context, c client.Client, localDfSt llb.State, d
 		}
 		selfImageRefStr = selfImageRefWithDigest.String()
 	}
-	selfImageSt := llb.Image(selfImageRefStr, llb.WithMetaResolver(c), dockerfile2llb.WithInternalName("self image"))
+	selfImageSt := llb.Image(selfImageRefStr, llb.WithMetaResolver(c), dockerui.WithInternalName("self image"))
 	return &selfImageSt, selfImageRefStr, nil
 }
 
