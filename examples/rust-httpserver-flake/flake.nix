@@ -9,14 +9,17 @@
         # See https://ryantm.github.io/nixpkgs/languages-frameworks/rust/
         app = pkgs.rustPlatform.buildRustPackage {
           name = "rust-httpserver";
-          cargoSha256 = "N8HCmBEiIX5G3F2OQH5IvkzpwhCJVpR51TB86gV9IAo=";
+          cargoHash= "sha256-c7dAXdlwIy9t/UufyyjDdZOMoAwRqphkYghp2aKW45U=";
           src = ./.;
         };
       in rec {
         defaultPackage = pkgs.dockerTools.buildImage {
           name = "rust-httpserver";
           tag = "nix";
-          contents = [ pkgs.bash pkgs.coreutils app ];
+          copyToRoot = pkgs.buildEnv {
+            name = "image-root";
+            paths= [ pkgs.bash pkgs.coreutils app ];
+          };
           config = {
             Cmd = [ "rust-httpserver" ];
             ExposedPorts = { "80/tcp" = { }; };
